@@ -1,6 +1,6 @@
 package com.gichungasoftwares.book_network.feedback;
 
-import com.gichungasoftwares.book_network.book.PageResponse;
+import com.gichungasoftwares.book_network.common.PageResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

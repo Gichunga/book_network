@@ -2,7 +2,7 @@ package com.gichungasoftwares.book_network.feedback;
 
 import com.gichungasoftwares.book_network.book.Book;
 import com.gichungasoftwares.book_network.book.BookRepository;
-import com.gichungasoftwares.book_network.book.PageResponse;
+import com.gichungasoftwares.book_network.common.PageResponse;
 import com.gichungasoftwares.book_network.exception.OperationNotPermittedException;
 import com.gichungasoftwares.book_network.user.User;
 import jakarta.persistence.EntityNotFoundException;

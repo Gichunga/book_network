@@ -1,5 +1,6 @@
 package com.gichungasoftwares.book_network.book;
 
+import com.gichungasoftwares.book_network.common.PageResponse;
 import com.gichungasoftwares.book_network.file.FileStorageService;
 import com.gichungasoftwares.book_network.exception.OperationNotPermittedException;
 import com.gichungasoftwares.book_network.history.BookTransactionHistory;

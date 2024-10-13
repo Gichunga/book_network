@@ -1,4 +1,4 @@
-package com.gichungasoftwares.book_network.book;
+package com.gichungasoftwares.book_network.common;
 
 import lombok.*;
 
