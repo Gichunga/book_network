@@ -3,6 +3,7 @@ package com.gichungasoftwares.book_network.history;
 import com.gichungasoftwares.book_network.book.Book;
 import com.gichungasoftwares.book_network.common.BaseEntity;
 import com.gichungasoftwares.book_network.user.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;

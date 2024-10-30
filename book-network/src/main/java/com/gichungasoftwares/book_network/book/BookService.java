@@ -50,7 +50,7 @@ public class BookService {
         User user = ((User) connectedUser.getPrincipal());
         // create pageable object
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-        Page<Book> books = bookRepository.findAllDisplayableBooks(pageable, user.getName());
+        Page<Book> books = bookRepository.findAllDisplayableBooks(pageable, user.getUser_id());
         List<BookResponse> bookResponse = books.stream()
                 .map(bookMapper::toBookResponse)
                 .toList();
@@ -70,7 +70,7 @@ public class BookService {
         User user = ((User) connectedUser.getPrincipal());
         // create pageable object
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-        Page<Book> books = bookRepository.findAll(BookSpecification.withOwnerId(user.getName()), pageable);
+        Page<Book> books = bookRepository.findAll(BookSpecification.withOwnerId(user.getUser_id()), pageable);
         List<BookResponse> bookResponse = books.stream()
                 .map(bookMapper::toBookResponse)
                 .toList();
@@ -90,7 +90,7 @@ public class BookService {
         User user = ((User) connectedUser.getPrincipal());
         // create pageable object
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-        Page<BookTransactionHistory> allBorrowedBooks = transactionHistoryRepository.findAllBorrowedBooks(pageable, user.getName());
+        Page<BookTransactionHistory> allBorrowedBooks = transactionHistoryRepository.findAllBorrowedBooks(pageable, user.getUser_id());
         List<BorrowedBookResponse> bookResponses = allBorrowedBooks.stream()
                 .map(bookMapper::toBorrowedBookResponse)
                 .toList();
@@ -110,7 +110,7 @@ public class BookService {
         User user = ((User) connectedUser.getPrincipal());
         // create pageable object
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").descending());
-        Page<BookTransactionHistory> allReturnedBooks = transactionHistoryRepository.findAllReturnedBooks(pageable, user.getName());
+        Page<BookTransactionHistory> allReturnedBooks = transactionHistoryRepository.findAllReturnedBooks(pageable, user.getUser_id());
         List<BorrowedBookResponse> bookResponses = allReturnedBooks.stream()
                 .map(bookMapper::toBorrowedBookResponse)
                 .toList();
@@ -157,31 +157,34 @@ public class BookService {
 
 
     public Integer borrowBook(Integer bookId, Authentication connectedUser) {
-        // get the book with this id
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new EntityNotFoundException("No book found with the ID:: " + bookId));
-        // check if book is shareable or archived
+                .orElseThrow(() -> new EntityNotFoundException("No book found with ID:: " + bookId));
         if (book.isArchived() || !book.isShareable()) {
             throw new OperationNotPermittedException("The requested book cannot be borrowed since it is archived or not shareable");
         }
-        // get the user from the authentication
         User user = ((User) connectedUser.getPrincipal());
-        // check if user owns this book
         if (Objects.equals(book.getOwner().getUser_id(), user.getUser_id())) {
             throw new OperationNotPermittedException("You cannot borrow your own book");
         }
-        // check if the book is already borrowed
-        final boolean isAlreadyBorrowed = transactionHistoryRepository.isAlreadyBorrowedByUser(bookId, user.getName());
-        if (isAlreadyBorrowed) {
-            throw new OperationNotPermittedException("You have already borrowed this book");
+
+        final boolean isAlreadyBorrowedByUser = transactionHistoryRepository.isAlreadyBorrowedByUser(bookId, user.getUser_id());
+        if (isAlreadyBorrowedByUser) {
+            throw new OperationNotPermittedException("You already borrowed this book and it is still not returned or the return is not approved by the owner");
         }
+        final boolean isAlreadyBorrowedByOtherUser = transactionHistoryRepository.isAlreadyBorrowed(bookId);
+        if (isAlreadyBorrowedByOtherUser) {
+            throw new OperationNotPermittedException("The requested book is already borrowed");
+        }
+
+        System.out.println("this works");
         BookTransactionHistory bookTransactionHistory = BookTransactionHistory.builder()
-                .book(book)
                 .user(user)
+                .book(book)
                 .isReturned(false)
                 .isReturnApproved(false)
                 .build();
         return transactionHistoryRepository.save(bookTransactionHistory).getId();
+
     }
 
 
@@ -200,11 +203,12 @@ public class BookService {
             throw new OperationNotPermittedException("You cannot return your own book");
         }
         // check if user has indeed borrowed this book
-        BookTransactionHistory bookTransactionHistory = transactionHistoryRepository.findByBookIdAndUserId(book.getId(), user.getName())
+        BookTransactionHistory bookTransactionHistory = transactionHistoryRepository.findByBookIdAndUserId(bookId, user.getUser_id())
                 .orElseThrow(() -> new OperationNotPermittedException("You did not borrow this book"));
         bookTransactionHistory.setReturned(true);
         return transactionHistoryRepository.save(bookTransactionHistory).getId();
     }
+
 
     public Integer ApproveReturnedBorrowedBook(Integer bookId, Authentication connectedUser) {
         // get the book with this id
@@ -221,7 +225,7 @@ public class BookService {
             throw new OperationNotPermittedException("You cannot approve your own book");
         }
         // check if user has indeed borrowed this book
-        BookTransactionHistory bookTransactionHistory = transactionHistoryRepository.findByBookIdAndOwnerId(book.getId(), user.getName())
+        BookTransactionHistory bookTransactionHistory = transactionHistoryRepository.findByBookIdAndOwnerId(bookId, user.getUser_id())
                 .orElseThrow(() -> new OperationNotPermittedException("The book is not returned yet so you cannot approve its return"));
         bookTransactionHistory.setReturnApproved(true);
         return transactionHistoryRepository.save(bookTransactionHistory).getId();

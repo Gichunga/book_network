@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 public class BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Integer id;
 
 
@@ -32,6 +32,7 @@ public class BaseEntity {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdDate;
+
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
@@ -39,8 +40,9 @@ public class BaseEntity {
     // from Application Auditor aware
     @CreatedBy
     @Column(nullable = false, updatable = false)
-    private String createdBy;
+    private Integer createdBy;
+
     @LastModifiedBy
     @Column(insertable = false)
-    private String lastModifiedBy;
+    private Integer lastModifiedBy;
 }
