@@ -59,7 +59,8 @@ public interface BookTransactionHistoryRepository extends JpaRepository<BookTran
     @Query("""
            SELECT history
            FROM BookTransactionHistory history
-           WHERE history.book.owner.user_id = :userId
+           WHERE history.book.createdBy = :userId
+           AND history.isReturned = true
            """)
     Page<BookTransactionHistory> findAllReturnedBooks(Pageable pageable, Integer userId);
 
