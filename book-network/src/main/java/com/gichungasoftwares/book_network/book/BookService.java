@@ -226,7 +226,7 @@ public class BookService {
         }
         // check if user has indeed borrowed this book
         BookTransactionHistory bookTransactionHistory = transactionHistoryRepository.findByBookIdAndOwnerId(bookId, user.getUser_id())
-                .orElseThrow(() -> new OperationNotPermittedException("The book is not returned yet so you cannot approve its return"));
+                .orElseThrow(() -> new OperationNotPermittedException("The book is not returned or you have already approved its return"));
         bookTransactionHistory.setReturnApproved(true);
         return transactionHistoryRepository.save(bookTransactionHistory).getId();
     }
